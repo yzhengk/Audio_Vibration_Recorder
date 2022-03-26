@@ -133,11 +133,10 @@ public class RecordingService extends Service {
         HashMap<String, String> parameters = new HashMap<>();
         parameters.put("machine", "wearable");
         parameters.put("name", mFileName);
+        String server_url = "http://"+Static.HOST+":5000/audio";
+        Log.d(LOG_TAG, "url: " + server_url);
 
-        Log.d(LOG_TAG, "device: " + parameters.get("machine"));
-
-
-        OkhttpUtil.okHttpUploadFile("http://"+Static.HOST+":5000/audio", file, "audio", OkhttpUtil.FILE_TYPE_AUDIO, parameters, new CallBackUtil.CallBackString() {
+        OkhttpUtil.okHttpUploadFile(server_url, file, "audio", OkhttpUtil.FILE_TYPE_AUDIO, parameters, new CallBackUtil.CallBackString() {
             @Override
             public void onFailure(Call call, Exception e) {
                 Log.d(LOG_TAG, "upload fail");

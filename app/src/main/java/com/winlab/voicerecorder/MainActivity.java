@@ -91,6 +91,7 @@ public class MainActivity extends WearableActivity {
             public void onFailure(Call call, Exception e) {
                 Toast.makeText(getBaseContext(), "Fail to connect to Server", Toast.LENGTH_LONG).show();
                 Log.e(LOG_TAG, "fail to updating record");
+                Log.e(LOG_TAG, e.toString());
             }
 
             @Override
