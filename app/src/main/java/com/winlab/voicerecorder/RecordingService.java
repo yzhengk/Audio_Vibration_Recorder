@@ -106,11 +106,7 @@ public class RecordingService extends Service {
         now = System.currentTimeMillis();
         do{
             count++;
-            //expName_time_count.mp4
             mFileName = "record_" + now + ".mp4";
-//            mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-//            mFilePath += "/SoundRecorder/" + mFileName;
-//            f = new File(mFilePath);
             f = new File(getBaseContext().getExternalFilesDir(
                     Environment.DIRECTORY_MUSIC), mFileName);
             mFilePath = f.getAbsolutePath();
@@ -125,29 +121,5 @@ public class RecordingService extends Service {
         mRecorder.release();
         Toast.makeText(this, getString(R.string.toast_recording_finish), Toast.LENGTH_LONG).show();
         mRecorder = null;
-
-        // upload file to server
-
-        Log.d(LOG_TAG, "upload audio: " +  mFilePath);
-        File file = new File( mFilePath);
-        HashMap<String, String> parameters = new HashMap<>();
-        parameters.put("machine", "wearable");
-        parameters.put("name", mFileName);
-        String server_url = "http://"+Static.HOST+":5000/audio";
-        Log.d(LOG_TAG, "url: " + server_url);
-
-        OkhttpUtil.okHttpUploadFile(server_url, file, "audio", OkhttpUtil.FILE_TYPE_AUDIO, parameters, new CallBackUtil.CallBackString() {
-            @Override
-            public void onFailure(Call call, Exception e) {
-                Log.d(LOG_TAG, "upload fail");
-                Log.d(LOG_TAG, e.toString());
-            }
-
-            @Override
-            public void onResponse(String response) {
-                Log.d(LOG_TAG, "upload done");
-            }
-        });
     }
-
 }
