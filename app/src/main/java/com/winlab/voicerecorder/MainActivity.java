@@ -9,6 +9,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioFormat;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
@@ -22,6 +24,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+
+import com.maple.recorder.recording.AudioChunk;
+import com.maple.recorder.recording.AudioRecordConfig;
+import com.maple.recorder.recording.MsRecorder;
+import com.maple.recorder.recording.PullTransport;
+import com.maple.recorder.recording.Recorder;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -37,6 +45,8 @@ public class MainActivity extends WearableActivity {
     private Sensor accelerometer;
     private StringBuffer sensorLog = new StringBuffer();
     private int samplingPeriodUs = 10000; // 100Hz
+
+    Recorder recorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +81,31 @@ public class MainActivity extends WearableActivity {
                 mChronometer.start();
                 //start RecordingService
                 Log.d(LOG_TAG, "start recording service");
-                startService(intent);
+                //startService(intent);
+
+                String mFileName = "record_" + System.currentTimeMillis() + ".wav";
+
+                // start wav recording
+                recorder = MsRecorder.wav(
+                        new File(getBaseContext().getExternalFilesDir(
+                                Environment.DIRECTORY_MUSIC), mFileName),
+                        // new AudioRecordConfig(), // 使用默认配置
+                        new AudioRecordConfig(
+                                MediaRecorder.AudioSource.MIC, // 音频源
+                                44100, // 采样率，44100、22050、16000、11025 Hz
+                                AudioFormat.CHANNEL_IN_MONO, // 单声道、双声道/立体声
+                                AudioFormat.ENCODING_PCM_16BIT // 8/16 bit
+                        ),
+                        new PullTransport.Default()
+                                .setOnAudioChunkPulledListener(new PullTransport.OnAudioChunkPulledListener() {
+                                    @Override
+                                    public void onAudioChunkPulled(AudioChunk audioChunk) {
+                                        Log.d("数据监听", "最大值: " + audioChunk.maxAmplitude());
+                                    }
+                                })
+                );
+
+                recorder.startRecording(); // 开始
                 sensorManager.registerListener(sensorEventListener, accelerometer, samplingPeriodUs);
                 //keep screen on while recording
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -83,7 +117,11 @@ public class MainActivity extends WearableActivity {
                 mChronometer.setBase(SystemClock.elapsedRealtime());
                 Log.d(LOG_TAG, "stop recording service");
                 // stop recording
-                stopService(intent);
+                //stopService(intent);
+
+                // start wav recording
+                recorder.stopRecording(); // 结束
+
                 // stop listen
                 sensorManager.unregisterListener(sensorEventListener);
                 try{
