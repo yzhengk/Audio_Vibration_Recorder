@@ -34,12 +34,15 @@ import com.maple.recorder.recording.Recorder;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class MainActivity extends WearableActivity {
     private static final String LOG_TAG = "MainActivity";
     private Chronometer mChronometer;
     private Switch switchRecorder;
+    private SimpleDateFormat sdf;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -47,6 +50,7 @@ public class MainActivity extends WearableActivity {
     private int samplingPeriodUs = 10000; // 100Hz
 
     Recorder recorder;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +79,9 @@ public class MainActivity extends WearableActivity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             Intent intent = new Intent(getBaseContext(), RecordingService.class);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            String Time = dateFormat.format(new Date());
+            System.out.println(Time);
             if(isChecked){
                 //start Chronometer
                 mChronometer.setBase(SystemClock.elapsedRealtime());
@@ -83,12 +90,11 @@ public class MainActivity extends WearableActivity {
                 Log.d(LOG_TAG, "start recording service");
                 //startService(intent);
 
-                String mFileName = "record_" + System.currentTimeMillis() + ".wav";
+                String mFileName = "record_" + Time + ".wav";
 
                 // start wav recording
                 recorder = MsRecorder.wav(
-                        new File(getBaseContext().getExternalFilesDir(
-                                Environment.DIRECTORY_MUSIC), mFileName),
+                        new File(getBaseContext().getDataDir(), mFileName),
                         // new AudioRecordConfig(), // 使用默认配置
                         new AudioRecordConfig(
                                 MediaRecorder.AudioSource.MIC, // 音频源
@@ -125,9 +131,7 @@ public class MainActivity extends WearableActivity {
                 // stop listen
                 sensorManager.unregisterListener(sensorEventListener);
                 try{
-
-                    FileWriter writer_acc = new FileWriter(getBaseContext().getExternalFilesDir(
-                            Environment.DIRECTORY_MUSIC)+ "/sensors_acc_" + System.currentTimeMillis() + ".csv");
+                    FileWriter writer_acc = new FileWriter(getBaseContext().getDataDir() + "/sensors_acc_" + Time + ".csv");
                     writer_acc.write(sensorLog.toString());
                     sensorLog = new StringBuffer();
                     writer_acc.close();
